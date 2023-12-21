@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Entrada e Saída</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #output {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #linkButton {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #linkButton:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Entrada e Saída</h1>
+
+        <label for="name">Nome:</label>
+        <input type="text" id="name" placeholder="Digite seu nome">
+        <br>
+
+        <button onclick="registrarEntrada()">Registrar Entrada</button>
+        <button onclick="registrarSaida()">Registrar Saída</button>
+
+        <div id="output"></div>
+
+        <button id="linkButton" onclick="direcionarParaLink()">Estoque</button>
+    </div>
+
+    <script>
+        let entradaTimestamp;
+
+        function registrarEntrada() {
+            const nome = document.getElementById('name').value;
+            entradaTimestamp = new Date().getTime();
+            mostrarMensagem(`Nome: ${nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
+
+            // Armazenar no localStorage
+            localStorage.setItem('checkinData', JSON.stringify({ nome, entradaTimestamp }));
+        }
+
+        function registrarSaida() {
+            if (!entradaTimestamp) {
+                mostrarMensagem("Por favor, registre a entrada primeiro.");
+                return;
+            }
+
+            const saidaTimestamp = new Date().getTime();
+            const tempoTotal = calcularTempoTotal(entradaTimestamp, saidaTimestamp);
+            mostrarMensagem(`Nome: ${document.getElementById('name').value}\nEntrada: ${formatarTimestamp(entradaTimestamp)}\nSaída: ${formatarTimestamp(saidaTimestamp)}\nTempo total: ${tempoTotal} segundos.`);
+
+            // Limpar dados do localStorage
+            localStorage.removeItem('checkinData');
+        }
+
+        function calcularTempoTotal(entrada, saida) {
+            const diferencaEmSegundos = Math.floor((saida - entrada) / 1000);
+            return diferencaEmSegundos;
+        }
+
+        function mostrarMensagem(mensagem) {
+            console.log(mensagem);
+            document.getElementById('output').innerText = mensagem;
+        }
+
+        function formatarTimestamp(timestamp) {
+            const data = new Date(timestamp);
+            const horas = String(data.getHours()).padStart(2, '0');
+            const minutos = String(data.getMinutes()).padStart(2, '0');
+            const segundos = String(data.getSeconds()).padStart(2, '0');
+            return `${horas}:${minutos}:${segundos}`;
+        }
+
+        function direcionarParaLink() {
+            // Substitua 'https://www.seulink.com' pelo link desejado
+            window.location.href = 'estoque.html';
+        }
+
+        // Verificar se há dados de check-in no localStorage ao carregar a página
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkinDataString = localStorage.getItem('checkinData');
+            if (checkinDataString) {
+                const checkinData = JSON.parse(checkinDataString);
+                entradaTimestamp = checkinData.entradaTimestamp;
+                mostrarMensagem(`Nome: ${checkinData.nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
+            }
+        });
+    </script>
+</body>
+</html>

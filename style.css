@@ -1,0 +1,93 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0))
+}
+
+#estoque {
+    width: 600px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+input,
+textarea,
+button {
+    width: 75%;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    background-color: #1a5661;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #3a363a;
+}
+
+#output {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.remove-btn {
+    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    background-color: #2b83d6;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#generate-pdf,
+#linkButton {
+    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    background-color: #000000;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#generate-pdf:hover,
+#linkButton:hover {
+    background-color: #25aeb3;
+}
+
+#content {
+    margin-top: 15px;
+    text-align: center;
+}
