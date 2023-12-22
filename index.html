@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,10 +51,18 @@
             background-color: #45a049;
         }
 
-        #output {
+        #output, #lastTransactions {
             margin-top: 20px;
             font-weight: bold;
             color: #333;
+            text-align: left;
+        }
+
+        .transaction {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
         }
 
         #linkButton {
@@ -85,33 +93,73 @@
 
         <div id="output"></div>
 
+        <button id="showLastTransactionsButton" onclick="mostrarUltimasTransacoes()">Mostrar Últimas Transações</button>
+        <div id="lastTransactions"></div>
+
         <button id="linkButton" onclick="direcionarParaLink()">Estoque</button>
     </div>
 
     <script>
         let entradaTimestamp;
+        let transacoes = [];
 
         function registrarEntrada() {
+            if (entradaTimestamp) {
+                mostrarMensagem("Já existe uma entrada registrada. Realize a saída antes de registrar uma nova entrada.");
+                return;
+            }
+
             const nome = document.getElementById('name').value;
             entradaTimestamp = new Date().getTime();
-            mostrarMensagem(`Nome: ${nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
+            const transacao = { tipo: 'Entrada', nome, timestamp: entradaTimestamp };
+            transacoes.unshift(transacao);
 
-            // Armazenar no localStorage
+            mostrarMensagem(`Nome: ${nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
             localStorage.setItem('checkinData', JSON.stringify({ nome, entradaTimestamp }));
         }
 
         function registrarSaida() {
             if (!entradaTimestamp) {
-                mostrarMensagem("Por favor, registre a entrada primeiro.");
+                mostrarMensagem("Não há entrada registrada para realizar a saída.");
                 return;
             }
 
             const saidaTimestamp = new Date().getTime();
             const tempoTotal = calcularTempoTotal(entradaTimestamp, saidaTimestamp);
-            mostrarMensagem(`Nome: ${document.getElementById('name').value}\nEntrada: ${formatarTimestamp(entradaTimestamp)}\nSaída: ${formatarTimestamp(saidaTimestamp)}\nTempo total: ${tempoTotal} segundos.`);
+            const transacao = { tipo: 'Saída', nome: document.getElementById('name').value, entradaTimestamp, saidaTimestamp, tempoTotal };
+            transacoes.unshift(transacao);
 
-            // Limpar dados do localStorage
+            mostrarMensagem(`Nome: ${transacao.nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}\nSaída: ${formatarTimestamp(saidaTimestamp)}\nTempo total: ${tempoTotal} segundos.`);
+            
+            // Remover a entrada registrada do array de transações
+            transacoes = transacoes.filter(t => t.tipo !== 'Entrada');
+
+            // Resetar a variável de entradaTimestamp
+            entradaTimestamp = null;
             localStorage.removeItem('checkinData');
+        }
+
+        function mostrarUltimasTransacoes() {
+            const lastTransactions = transacoes.slice(0, 5);
+            const outputDiv = document.getElementById('lastTransactions');
+            outputDiv.innerHTML = "<h3>Últimas Transações</h3>";
+
+            // Exclui a última entrada, se houver
+            if (lastTransactions.length > 0 && lastTransactions[0].tipo === 'Entrada') {
+                lastTransactions.shift();
+            }
+
+            lastTransactions.forEach(transaction => {
+                const message = transaction.tipo === 'Entrada'
+                    ? `Nome: ${transaction.nome}\nEntrada: ${formatarTimestamp(transaction.timestamp)}`
+                    : `Nome: ${transaction.nome}\nEntrada: ${formatarTimestamp(transaction.entradaTimestamp)}\nSaída: ${formatarTimestamp(transaction.saidaTimestamp)}\nTempo total: ${transaction.tempoTotal} segundos.`;
+
+                const transactionDiv = document.createElement('div');
+                transactionDiv.classList.add('transaction');
+                transactionDiv.innerText = message;
+
+                outputDiv.appendChild(transactionDiv);
+            });
         }
 
         function calcularTempoTotal(entrada, saida) {
@@ -133,11 +181,9 @@
         }
 
         function direcionarParaLink() {
-            // Substitua 'https://www.seulink.com' pelo link desejado
             window.location.href = 'estoque.html';
         }
 
-        // Verificar se há dados de check-in no localStorage ao carregar a página
         document.addEventListener('DOMContentLoaded', function () {
             const checkinDataString = localStorage.getItem('checkinData');
             if (checkinDataString) {
