@@ -5,8 +5,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    background: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0))
+    min-height: 100vh; /* Use min-height em vez de height para garantir que o corpo cubra toda a altura visível */
+    background: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0));
 }
 
 #estoque {
@@ -15,6 +15,7 @@ body {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Adicione overflow: hidden para esconder a barra de rolagem no contêiner pai */
 }
 
 h2 {
@@ -43,7 +44,7 @@ button {
 }
 
 button {
-    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    width: calc(50% - 5px);
     background-color: #1a5661;
     color: white;
     border: none;
@@ -62,7 +63,7 @@ button:hover {
 }
 
 .remove-btn {
-    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    width: calc(50% - 5px);
     background-color: #2b83d6;
     color: white;
     border: none;
@@ -73,7 +74,7 @@ button:hover {
 
 #generate-pdf,
 #linkButton {
-    width: calc(50% - 5px); /* Largura fixa, metade da largura do contêiner com uma margem de 5px entre os botões */
+    width: calc(50% - 5px);
     background-color: #000000;
     color: white;
     padding: 10px 15px;
