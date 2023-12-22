@@ -115,6 +115,48 @@
     });
 
     function gerarPDF(dados) {
+        var contentDiv = document.createElement("div");
+
+        // Criar uma tabela
+        var table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+        table.style.marginTop = "20px";
+
+        // Cabeçalho da tabela
+        var headerRow = table.insertRow();
+        var headers = ["Produto", "Quantidade", "Especificações"];
+        for (var h = 0; h < headers.length; h++) {
+            var headerCell = document.createElement("th");
+            headerCell.style.border = "1px solid #ddd";
+            headerCell.style.padding = "8px";
+            headerCell.style.textAlign = "left";
+            headerCell.style.backgroundColor = "#f2f2f2";
+            headerCell.innerHTML = headers[h];
+            headerRow.appendChild(headerCell);
+        }
+
+        // Adicionar linhas à tabela
+        for (var i = 0; i < dados.length; i++) {
+            var row = table.insertRow();
+            var produtoCell = row.insertCell(0);
+            var quantidadeCell = row.insertCell(1);
+            var especificacoesCell = row.insertCell(2);
+
+            produtoCell.style.border = "1px solid #ddd";
+            quantidadeCell.style.border = "1px solid #ddd";
+            especificacoesCell.style.border = "1px solid #ddd";
+            produtoCell.style.padding = "8px";
+            quantidadeCell.style.padding = "8px";
+            especificacoesCell.style.padding = "8px";
+
+            produtoCell.innerHTML = dados[i].produto;
+            quantidadeCell.innerHTML = dados[i].quantidade;
+            especificacoesCell.innerHTML = dados[i].especificacoes || "-";
+        }
+
+        contentDiv.appendChild(table);
+
         var options = {
             margin: 1,
             filename: 'estoque.pdf',
@@ -123,25 +165,7 @@
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
-        html2pdf().set(options).from(construirConteudoPDF(dados)).save();
-    }
-
-    function construirConteudoPDF(dados) {
-        var contentDiv = document.createElement("div");
-
-        for (var i = 0; i < dados.length; i++) {
-            var produto = dados[i].produto;
-            var quantidade = dados[i].quantidade;
-            var especificacoes = dados[i].especificacoes;
-
-            var produtoDiv = document.createElement("div");
-            produtoDiv.innerHTML = "<strong>Produto:</strong> " + produto + " | <strong>Quantidade:</strong> " + quantidade +
-                (especificacoes ? " | <strong>Especificações:</strong> " + especificacoes : "");
-
-            contentDiv.appendChild(produtoDiv);
-        }
-
-        return contentDiv;
+        html2pdf().set(options).from(contentDiv).save();
     }
 
     function direcionarParaLink() {
