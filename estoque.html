@@ -1,197 +1,178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Entrada e Saída</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            margin: 0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 16px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #4caf50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #output, #lastTransactions {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #333;
-            text-align: left;
-        }
-
-        .transaction {
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        #linkButton {
-            background-color: #2196F3;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        #linkButton:hover {
-            background-color: #0b7dda;
-        }
-    </style>
+    <title>Sistema de Estoque</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Registro de Entrada e Saída</h1>
 
-        <label for="name">Nome:</label>
-        <input type="text" id="name" placeholder="Digite seu nome">
-        <br>
+<div id="estoque">
+    <h2>Estoque galapagos</h2>
 
-        <button onclick="registrarEntrada()">Registrar Entrada</button>
-        <button onclick="registrarSaida()">Registrar Saída</button>
-
-        <div id="output"></div>
-
-        <button id="showLastTransactionsButton" onclick="mostrarUltimasTransacoes()">Registros</button>
-        <div id="lastTransactions"></div>
-
-        <button id="linkButton" onclick="direcionarParaLink()">Estoque</button>
+    <div class="input-group" onmouseover="mostrarEspecificacoes()" onmouseout="ocultarEspecificacoes()">
+        <label for="produto">Equipamento:</label>
+        <input type="text" id="produto">
     </div>
 
-    <script>
-        let entradaTimestamp;
-        let transacoes = [];
+    <div class="input-group">
+        <label for="especificacoes">Informações do Equipamento:</label>
+        <textarea id="especificacoes" rows="4" placeholder="Insira as especificações do produto"></textarea>
+    </div>
 
-        function registrarEntrada() {
-            if (entradaTimestamp) {
-                mostrarMensagem("Já existe uma entrada registrada. Realize a saída antes de registrar uma nova entrada.");
-                return;
-            }
+    <div class="input-group">
+        <label for="quantidade">Quantidade:</label>
+        <input type="number" id="quantidade">
+    </div>
 
-            const nome = document.getElementById('name').value;
-            entradaTimestamp = new Date().getTime();
-            const transacao = { tipo: 'Entrada', nome, timestamp: entradaTimestamp };
-            transacoes.unshift(transacao);
+    <button onclick="adicionarProduto()">Adicionar Equipamento</button>
 
-            mostrarMensagem(`Nome: ${nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
-            localStorage.setItem('checkinData', JSON.stringify({ nome, entradaTimestamp }));
+    <div id="output"></div>
+
+    <button id="generate-pdf">Gerar PDF</button>
+    <div id="content"></div>
+    <button id="linkButton" onclick="direcionarParaLink()">Checkin</button>
+</div>
+
+<script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+<script src="script.js"></script>
+
+<script>
+    var estoque = [];
+
+    if (localStorage.getItem('estoque')) {
+        estoque = JSON.parse(localStorage.getItem('estoque'));
+        mostrarEstoque();
+    }
+
+    function adicionarProduto() {
+        var produtoInput = document.getElementById("produto");
+        var quantidadeInput = document.getElementById("quantidade");
+        var especificacoesTextarea = document.getElementById("especificacoes");
+
+        var produto = produtoInput.value;
+        var quantidade = parseInt(quantidadeInput.value);
+        var especificacoes = especificacoesTextarea.value;
+
+        if (produto && !isNaN(quantidade) && quantidade > 0) {
+            estoque.push({ produto: produto, quantidade: quantidade, especificacoes: especificacoes });
+
+            localStorage.setItem('estoque', JSON.stringify(estoque));
+
+            mostrarEstoque();
+        } else {
+            alert("Por favor, preencha os campos corretamente.");
         }
 
-        function registrarSaida() {
-            if (!entradaTimestamp) {
-                mostrarMensagem("Não há entrada registrada para realizar a saída.");
-                return;
-            }
+        produtoInput.value = "";
+        quantidadeInput.value = "";
+        especificacoesTextarea.value = "";
+    }
 
-            const saidaTimestamp = new Date().getTime();
-            const tempoTotal = calcularTempoTotal(entradaTimestamp, saidaTimestamp);
-            const transacao = { tipo: 'Saída', nome: document.getElementById('name').value, entradaTimestamp, saidaTimestamp, tempoTotal };
-            transacoes.unshift(transacao);
+    function removerProduto(index) {
+        estoque.splice(index, 1);
 
-            mostrarMensagem(`Nome: ${transacao.nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}\nSaída: ${formatarTimestamp(saidaTimestamp)}\nTempo total: ${tempoTotal} segundos.`);
-            
-            // Remover a entrada registrada do array de transações
-            transacoes = transacoes.filter(t => t.tipo !== 'Entrada');
+        localStorage.setItem('estoque', JSON.stringify(estoque));
 
-            // Resetar a variável de entradaTimestamp
-            entradaTimestamp = null;
-            localStorage.removeItem('checkinData');
+        mostrarEstoque();
+    }
+
+    function mostrarEstoque() {
+        var outputDiv = document.getElementById("output");
+
+        // Limpar o conteúdo existente
+        outputDiv.innerHTML = "";
+
+        for (var i = 0; i < estoque.length; i++) {
+            var produto = estoque[i].produto;
+            var quantidade = estoque[i].quantidade;
+            var especificacoes = estoque[i].especificacoes;
+
+            var produtoDiv = document.createElement("div");
+            produtoDiv.innerHTML = "<strong>Produto:</strong> " + produto + " | <strong>Quantidade:</strong> " + quantidade +
+                (especificacoes ? " | <strong>Especificações:</strong> " + especificacoes : "");
+
+            var removeButton = document.createElement("button");
+            removeButton.innerHTML = "Remover";
+            removeButton.className = "remove-btn";
+            removeButton.onclick = (function (index) {
+                return function () {
+                    removerProduto(index);
+                };
+            })(i);
+
+            produtoDiv.appendChild(removeButton);
+
+            // Adicionar ao conteúdo existente, em vez de substituir
+            outputDiv.appendChild(produtoDiv);
+        }
+    }
+
+    document.getElementById("generate-pdf").addEventListener("click", function () {
+        // Chamando a função para gerar PDF e passando o estoque como parâmetro
+        gerarPDF(estoque);
+    });
+
+    function gerarPDF(dados) {
+        var contentDiv = document.createElement("div");
+
+        // Criar uma tabela
+        var table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+        table.style.marginTop = "20px";
+
+        // Cabeçalho da tabela
+        var headerRow = table.insertRow();
+        var headers = ["Produto", "Quantidade", "Especificações"];
+        for (var h = 0; h < headers.length; h++) {
+            var headerCell = document.createElement("th");
+            headerCell.style.border = "1px solid #ddd";
+            headerCell.style.padding = "8px";
+            headerCell.style.textAlign = "left";
+            headerCell.style.backgroundColor = "#f2f2f2";
+            headerCell.innerHTML = headers[h];
+            headerRow.appendChild(headerCell);
         }
 
-        function mostrarUltimasTransacoes() {
-            const lastTransactions = transacoes.slice(0, 5);
-            const outputDiv = document.getElementById('lastTransactions');
-            outputDiv.innerHTML = "<h3>Últimas Transações</h3>";
+        // Adicionar linhas à tabela
+        for (var i = 0; i < dados.length; i++) {
+            var row = table.insertRow();
+            var produtoCell = row.insertCell(0);
+            var quantidadeCell = row.insertCell(1);
+            var especificacoesCell = row.insertCell(2);
 
-            // Exclui a última entrada, se houver
-            if (lastTransactions.length > 0 && lastTransactions[0].tipo === 'Entrada') {
-                lastTransactions.shift();
-            }
+            produtoCell.style.border = "1px solid #ddd";
+            quantidadeCell.style.border = "1px solid #ddd";
+            especificacoesCell.style.border = "1px solid #ddd";
+            produtoCell.style.padding = "8px";
+            quantidadeCell.style.padding = "8px";
+            especificacoesCell.style.padding = "8px";
 
-            lastTransactions.forEach(transaction => {
-                const message = transaction.tipo === 'Entrada'
-                    ? `Nome: ${transaction.nome}\nEntrada: ${formatarTimestamp(transaction.timestamp)}`
-                    : `Nome: ${transaction.nome}\nEntrada: ${formatarTimestamp(transaction.entradaTimestamp)}\nSaída: ${formatarTimestamp(transaction.saidaTimestamp)}\nTempo total: ${transaction.tempoTotal} segundos.`;
-
-                const transactionDiv = document.createElement('div');
-                transactionDiv.classList.add('transaction');
-                transactionDiv.innerText = message;
-
-                outputDiv.appendChild(transactionDiv);
-            });
+            produtoCell.innerHTML = dados[i].produto;
+            quantidadeCell.innerHTML = dados[i].quantidade;
+            especificacoesCell.innerHTML = dados[i].especificacoes || "-";
         }
 
-        function calcularTempoTotal(entrada, saida) {
-            const diferencaEmSegundos = Math.floor((saida - entrada) / 1000);
-            return diferencaEmSegundos;
-        }
+        contentDiv.appendChild(table);
 
-        function mostrarMensagem(mensagem) {
-            console.log(mensagem);
-            document.getElementById('output').innerText = mensagem;
-        }
+        var options = {
+            margin: 1,
+            filename: 'estoque.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
 
-        function formatarTimestamp(timestamp) {
-            const data = new Date(timestamp);
-            const horas = String(data.getHours()).padStart(2, '0');
-            const minutos = String(data.getMinutes()).padStart(2, '0');
-            const segundos = String(data.getSeconds()).padStart(2, '0');
-            return `${horas}:${minutos}:${segundos}`;
-        }
+        html2pdf().set(options).from(contentDiv).save();
+    }
 
-        function direcionarParaLink() {
-            window.location.href = 'estoque.html';
-        }
+    function direcionarParaLink() {
+        // Substitua 'https://www.seulink.com' pelo link desejado
+        window.location.href = 'index.html';
+    }
+</script>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const checkinDataString = localStorage.getItem('checkinData');
-            if (checkinDataString) {
-                const checkinData = JSON.parse(checkinDataString);
-                entradaTimestamp = checkinData.entradaTimestamp;
-                mostrarMensagem(`Nome: ${checkinData.nome}\nEntrada: ${formatarTimestamp(entradaTimestamp)}`);
-            }
-        });
-    </script>
 </body>
 </html>
